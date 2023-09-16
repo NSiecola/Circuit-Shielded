@@ -6,6 +6,8 @@
 #define LED_VERDE_LIGADO (1 << PB1)
 #define LED_VERMELHO_DESLIGADO (1 << PB2)
 #define SENSOR_CONVERSAO 0
+#define LEITURA_AD (1 << PB3)
+#define RELAY (1 << PD0)
 
 float Leitura_AD;
 float tensao;
@@ -28,7 +30,7 @@ void iniciarADC()
 int main(void)
 {
     Serial.begin(9600);
-
+    
     DDRB |= LED_VERDE_LIGADO | LED_VERMELHO_DESLIGADO;     // Configura o pino do LED como saída
     PORTB &= ~(LED_VERDE_LIGADO | LED_VERMELHO_DESLIGADO); // Apaga o LED
 
@@ -46,16 +48,42 @@ int main(void)
         tensao = (Leitura_AD * 5.00) / 1023.00; // Cálculo da Tensão
 
         Serial.println(tensao);
+        _delay_ms(1000);
 
-        if (tensao > 1.17)
-        {
-            PORTB |= LED_VERDE_LIGADO;        // Acende o LED
-            PORTB &= ~LED_VERMELHO_DESLIGADO; // Apaga o LED
+        if(PINB & LEITURA_AD){
+            if(tensao > 0.700 && tensao < 0.900)
+            {
+                Serial.println("Luz Ligada");
+                PORTB |= LED_VERDE_LIGADO;        // Acende o LED
+                PORTB &= ~LED_VERMELHO_DESLIGADO; // Apaga o LED
+                PORTB |= RELAY;                   // Liga o Relay   
+            }
+            else
+            {
+                Serial.println("Luz Desligada");
+                PORTB &= ~LED_VERDE_LIGADO;       // Apaga o LED
+                PORTB |= LED_VERMELHO_DESLIGADO;  // Acende o LED
+                PORTB &= ~RELAY;                  // Desliga o Relay
+            }
         }
         else
         {
-            PORTB &= ~LED_VERDE_LIGADO;      // Apaga o LED
-            PORTB |= LED_VERMELHO_DESLIGADO; // Acende o LED
+            if(tensao > 1.734 && tensao < 2.150)
+            {
+                Serial.println("Luz Ligada");
+                PORTB |= LED_VERDE_LIGADO;        // Acende o LED
+                PORTB &= ~LED_VERMELHO_DESLIGADO; // Apaga o LED
+                PORTB |= RELAY;                   // Liga o Relay
+            }
+            else
+            {
+                Serial.println("Luz Desligada");
+                PORTB &= ~LED_VERDE_LIGADO;       // Apaga o LED
+                PORTB |= LED_VERMELHO_DESLIGADO;  // Acende o LED
+                PORTB &= ~RELAY;                  // Desliga o Relay
+            }
         }
     }
 }
+
+
