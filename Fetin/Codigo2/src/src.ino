@@ -8,6 +8,8 @@
 #define SENSOR_CONVERSAO 0
 #define LEITURA_AD (1 << PB3)
 #define RELAY (1 << PB4)
+#define ZERO_CROSS (1 << PB5) // Define o pino de entrada do cruzamento por zero como P1.5
+
 
 float Leitura_AD;
 float tensao = 0;
@@ -36,9 +38,20 @@ int main(void)
     PORTB &= ~(LED_VERDE_LIGADO | LED_VERMELHO_DESLIGADO | RELAY); // Apaga o LED
 
     configADC(); // Configura o ADC
+    
+    // Configure o pino de entrada do cruzamento por zero (P1.5) como entrada
+    DDRB &= ~ZERO_CROSS;
+
+    // Ative o resistor de pull-up para o pino de entrada do cruzamento por zero
+    PORTB |= ZERO_CROSS;
 
     while (1)
     {
+
+        // Aguarde uma borda de descida no pino de entrada do cruzamento por zero
+        while (PINB & ZERO_CROSS)
+            ;
+
         tensao = 0;
 
         for(int i = 0; i < amostras; i++)
@@ -58,21 +71,22 @@ int main(void)
 
         media = tensao / amostras;
 
-       Serial.println(media);
-        _delay_ms(500);
+       //Serial.println(media);
+        //_delay_ms(500);
 
         if(PINB & LEITURA_AD)
         {
             if(media > 0.410 && media < 0.520)
             {
-               Serial.println("Luz Ligada");
+          //     Serial.println("Luz Ligada");
                 PORTB |= LED_VERDE_LIGADO;        // Acende o LED
                 PORTB &= ~LED_VERMELHO_DESLIGADO; // Apaga o LED
+                _delay_ms(5);
                 PORTB |= RELAY;                   // Liga o Relay   
             }
             else
             {
-             Serial.println("Luz Desligada");
+            // Serial.println("Luz Desligada");
                 PORTB &= ~LED_VERDE_LIGADO;       // Apaga o LED
                 PORTB |= LED_VERMELHO_DESLIGADO;  // Acende o LED
                 PORTB &= ~RELAY;                  // Desliga o Relay
@@ -82,14 +96,15 @@ int main(void)
         {
             if(media > 1.040 && media < 1.290)
             {
-              Serial.println("Luz Ligada");
+              //Serial.println("Luz Ligada");
                 PORTB |= LED_VERDE_LIGADO;        // Acende o LED
                 PORTB &= ~LED_VERMELHO_DESLIGADO; // Apaga o LED
+                _delay_ms(5);
                 PORTB |= RELAY;                   // Liga o Relay
             }
             else
             {
-                Serial.println("Luz Desligada");
+                //Serial.println("Luz Desligada");
                 PORTB &= ~LED_VERDE_LIGADO;       // Apaga o LED
                 PORTB |= LED_VERMELHO_DESLIGADO;  // Acende o LED
                 PORTB &= ~RELAY;                  // Desliga o Relay
