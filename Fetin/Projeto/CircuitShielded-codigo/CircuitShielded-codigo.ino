@@ -33,6 +33,7 @@ void iniciarADC()
 
 int main(void)
 {
+    // Serial.begin(9600); // Inicia a comunicação serial
 
     DDRB |= LED_VERDE_LIGADO | LED_VERMELHO_DESLIGADO | RELAY;     // Configura o pino do LED como saída
     PORTB &= ~(LED_VERDE_LIGADO | LED_VERMELHO_DESLIGADO | RELAY); // Apaga o LED
@@ -70,6 +71,9 @@ int main(void)
         }
 
         media = tensao / amostras;
+
+        // Serial.println(media);
+        // _delay_ms(500);
 
         if (PINB & LEITURA_AD)
         {
